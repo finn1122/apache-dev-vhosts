@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  apache:
+    build: .
+    container_name: apache-dev
+    ports:
+      - "8080:80"
+    volumes:
+      - ./www:/var/www
+      - ./sites:/etc/apache2/sites-available
+    restart: always

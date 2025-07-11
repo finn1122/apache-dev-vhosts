@@ -1,0 +1,10 @@
+
+# Ignorar todos los archivos de contenido web (pueden generarse o restaurarse)
+www/*
+
+# Ignorar contenedores temporales
+.env
+*.log
+
+# Docker volumes temporales
+volumes/
