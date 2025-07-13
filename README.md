@@ -1,6 +1,6 @@
 # 🐳 Apache + PHP 7.4 + Laravel en Docker
 
-Este entorno de desarrollo contiene una imagen personalizada de Apache con PHP 7.4 configurado para trabajar con múltiples proyectos Laravel mediante VirtualHosts. El archivo `000-default.conf` se copia y activa automáticamente al construir la imagen.
+Este entorno de desarrollo contiene una imagen personalizada de Apache con PHP 7.4 configurado para trabajar con múltiples proyectos Laravel mediante VirtualHosts. Está preparado para conectarse a otros contenedores como MySQL en red compartida (`devnet`).
 
 ---
 
@@ -23,12 +23,12 @@ project-root/
 
 ## ⚙️ Configuración de Apache
 
-El archivo de configuración `000-default.conf` define dos alias accesibles desde el navegador:
+El archivo `000-default.conf` define dos alias accesibles desde el navegador:
 
 - `/api` → `www/api/public` (Laravel)
-- `/back` → `www/back`
+- `/back` → `www/back` (backend personalizado)
 
-Ejemplo de VirtualHost:
+### VirtualHost de ejemplo:
 
 ```apache
 <VirtualHost *:80>
@@ -52,6 +52,43 @@ Ejemplo de VirtualHost:
     ErrorLog ${APACHE_LOG_DIR}/error.log
     CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
+```
+
+---
+
+## 🧩 Software instalado en la imagen
+
+- PHP 7.4 con extensiones:
+  - `mysqli`, `pdo`, `pdo_mysql`
+- Apache con `mod_rewrite` activado
+- Herramienta de red:
+  - `ping` (`iputils-ping`) para diagnosticar conectividad entre contenedores
+
+---
+
+## 🔌 Conexión a MySQL (red `devnet`)
+
+Este contenedor está pensado para conectarse con un contenedor `mysql-dev` en red compartida `devnet`.
+
+### Variables recomendadas en `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=mysql-dev
+DB_PORT=3306
+DB_DATABASE=api
+DB_USERNAME=devuser
+DB_PASSWORD=Devpass123!
+```
+
+Verifica la conexión con un script PHP:
+
+```php
+$mysqli = new mysqli('mysql-dev', 'devuser', 'Devpass123!', 'api', 3306);
+if ($mysqli->connect_error) {
+    die("❌ Error de conexión: " . $mysqli->connect_error);
+}
+echo "✅ Conectado a MySQL correctamente.";
 ```
 
 ---
@@ -81,8 +118,6 @@ docker compose down
 
 ## 🧼 Limpieza (opcional)
 
-Si quieres eliminar contenedores detenidos y volúmenes huérfanos:
-
 ```bash
 docker system prune -f
 ```
@@ -92,4 +127,7 @@ docker system prune -f
 ## 🧠 Notas adicionales
 
 - Asegúrate de que `www/api/public/index.php` exista y sea accesible.
-- Si usas Laravel, recuerda configurar `.env`, permisos en `storage/` y correr `composer install`.
+- Para Laravel:
+  - Configura el archivo `.env`
+  - Da permisos a `storage/` y `bootstrap/cache/`
+  - Ejecuta `composer install`

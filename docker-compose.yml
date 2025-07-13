@@ -1,4 +1,3 @@
-
 services:
   apache:
     build: .
@@ -8,3 +7,9 @@ services:
     volumes:
       - ./www:/www         # Solo montamos el código fuente, no el archivo de configuración
     restart: always
+    networks:
+      - devnet
+
+networks:
+  devnet:
+    external: true
