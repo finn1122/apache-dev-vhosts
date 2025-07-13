@@ -1,12 +1,10 @@
-version: '3.8'
 
 services:
   apache:
     build: .
-    container_name: apache-dev
+    container_name: apache-dev-php74
     ports:
-      - "8080:80"
+      - "8081:80"
     volumes:
-      - ./www:/var/www
-      - ./sites:/etc/apache2/sites-available
+      - ./www:/www         # Solo montamos el código fuente, no el archivo de configuración
     restart: always

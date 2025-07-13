@@ -15,5 +15,11 @@ docker compose up -d --build
 echo "⏳ Esperando unos segundos para que el contenedor se inicie..."
 sleep 5
 
+# Activar vhost dentro del contenedor
+echo "🔧 Activando virtualhost en el contenedor..."
+docker exec apache-dev-php74 bash -c "a2ensite 000-default.conf && apachectl restart"
+
 echo "✅ Contenedor Apache iniciado correctamente."
-echo "🌐 Si configuraste project1.local, visita: http://project1.local:8080"
+echo "🌐 Accede desde tu navegador a:"
+echo "   👉 http://localhost:8081/api"
+echo "   👉 http://localhost:8081/back"

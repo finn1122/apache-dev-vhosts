@@ -1,80 +1,95 @@
-# Apache Dockerizado con Virtual Hosts
+# 🐳 Apache + PHP 7.4 + Laravel en Docker
 
-Este proyecto contiene una imagen personalizada de Apache + PHP 8.2 usando tu configuración original extraída desde `/etc/apache2` y tu backup de sitios en `/var/www`.
-
-## 📁 Estructura
-
-```
-apache-docker-vhosts/
-├── Dockerfile
-├── docker-compose.yml
-├── init-apache-docker.sh
-├── conf/                    # Configuración personalizada de Apache
-│   ├── apache2.conf
-│   ├── ports.conf
-│   ├── envvars
-│   ├── magic
-│   ├── conf-available/
-│   ├── mods-available/
-│   ├── sites-available/
-│   └── sites-enabled/
-├── www/                     # Contenido de tus sitios web (document root)
-```
-
-## 🚀 Instrucciones
-
-1. Asegúrate de tener Docker y Docker Compose instalados.
-2. Coloca los archivos de tus sitios dentro de `www/`
-3. Levanta el contenedor:
-
-```bash
-./init-apache-docker.sh
-```
-
-## 🌐 Acceso
-
-Ejemplo si tienes un virtual host `project1.local`:
-
-```
-http://project1.local:8080
-```
-
-Recuerda editar tu `/etc/hosts` en el sistema anfitrión si lo necesitas:
-
-```
-127.0.0.1  project1.local
-```
-
-# ejemplo 127.0.0.1 project1.local travele.local bakery.local api.local
-
-
-## 🛠️ Personalización
-
-Puedes modificar cualquier archivo de configuración dentro de `conf/` y reiniciar el contenedor para aplicar los cambios.
-
-
+Este entorno de desarrollo contiene una imagen personalizada de Apache con PHP 7.4 configurado para trabajar con múltiples proyectos Laravel mediante VirtualHosts. El archivo `000-default.conf` se copia y activa automáticamente al construir la imagen.
 
 ---
 
-## 🧭 Configurar dominios locales (`/etc/hosts`)
+## 📁 Estructura del proyecto
 
-Para que puedas acceder a tus sitios virtuales por nombres como `project1.local`, necesitas agregar esos dominios a tu archivo de hosts del sistema operativo anfitrión.
+```
+project-root/
+├── Dockerfile
+├── docker-compose.yml
+├── conf/
+│   └── sites-available/
+│       └── 000-default.conf
+├── www/
+│   ├── api/         # Proyecto Laravel
+│   │   └── public/
+│   └── back/        # Otro proyecto o backoffice
+```
 
-### ✏️ Edita el archivo `/etc/hosts`
+---
+
+## ⚙️ Configuración de Apache
+
+El archivo de configuración `000-default.conf` define dos alias accesibles desde el navegador:
+
+- `/api` → `www/api/public` (Laravel)
+- `/back` → `www/back`
+
+Ejemplo de VirtualHost:
+
+```apache
+<VirtualHost *:80>
+    ServerName localhost
+
+    Alias /api /www/api/public
+    Alias /back /www/back
+
+    <Directory /www/api/public>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    <Directory /www/back>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+```
+
+---
+
+## 🚀 Comandos de uso
+
+### 1. Construir y levantar el contenedor:
 
 ```bash
-sudo nano /etc/hosts
+docker compose up -d --build
 ```
 
-Agrega esta línea (y tantos dominios como necesites):
+### 2. Detener el contenedor:
 
+```bash
+docker compose down
 ```
-127.0.0.1  project1.local travele.local back.local bakery.local
+
+---
+
+## 🌐 Acceso en el navegador
+
+- Laravel: [http://localhost:8081/api](http://localhost:8081/api)
+- Backoffice: [http://localhost:8081/back](http://localhost:8081/back)
+
+---
+
+## 🧼 Limpieza (opcional)
+
+Si quieres eliminar contenedores detenidos y volúmenes huérfanos:
+
+```bash
+docker system prune -f
 ```
 
-Guarda y cierra. Luego puedes acceder a tus sitios por ejemplo en:
+---
 
-- `http://project1.local:8080`
-- `http://travele.local:8080`
-- `http://bakery.local:8080`
+## 🧠 Notas adicionales
 
+- Asegúrate de que `www/api/public/index.php` exista y sea accesible.
+- Si usas Laravel, recuerda configurar `.env`, permisos en `storage/` y correr `composer install`.
